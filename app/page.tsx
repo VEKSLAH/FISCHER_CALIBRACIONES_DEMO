@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { prisma } from "@/src/lib/prisma";
 import { Cliente, Prisma } from "@prisma/client/edge";
 import FischerLogo from "./componets/fischerLogo";

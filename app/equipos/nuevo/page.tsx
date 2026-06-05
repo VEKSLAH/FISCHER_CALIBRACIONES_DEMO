@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { prisma } from "@/src/lib/prisma";
 import { crearEquipo } from "@/src/actions/equipos";
 import Link from "next/link";

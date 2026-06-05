@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { prisma } from "@/src/lib/prisma";
 import { crearCalibracion } from "@/src/actions/calibraciones";
 import Link from "next/link";
