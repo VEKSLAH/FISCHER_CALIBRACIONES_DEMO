@@ -60,7 +60,6 @@ export default async function Home() {
   }).length;
 
   const alDia = totalEquipos - vencidos - proximos;
-
   function obtenerEstado(equipo: EquipoConCliente) {
     const hoy = new Date();
 
@@ -99,6 +98,77 @@ export default async function Home() {
     proxima.setMonth(proxima.getMonth() + equipo.frecuenciaMeses);
 
     return proxima.toLocaleDateString("es-AR");
+  }
+
+  const equiposVencidos = equipos.filter((equipo) => {
+    const proxima = new Date(equipo.fechaUltimaCalibracion);
+
+    proxima.setMonth(proxima.getMonth() + equipo.frecuenciaMeses);
+
+    return proxima < hoy;
+  });
+
+  const clientesConVencidos = equiposVencidos.reduce(
+    (acc, equipo) => {
+      acc[equipo.cliente.nombre] = (acc[equipo.cliente.nombre] || 0) + 1;
+
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  const clienteCritico =
+    Object.entries(clientesConVencidos).sort((a, b) => b[1] - a[1])[0]?.[0] ??
+    "Sin alertas";
+
+  const alertasIA = equiposVencidos.length + proximos;
+
+  // 👇 NUEVO
+  let nivelRiesgo = "Bajo";
+
+  if (equiposVencidos.length >= 3) {
+    nivelRiesgo = "Alto";
+  } else if (equiposVencidos.length > 0) {
+    nivelRiesgo = "Medio";
+  }
+
+  let mensajeIA = "";
+  if (equiposVencidos.length > 0) {
+    mensajeIA = `
+Nivel de Riesgo: ${nivelRiesgo}
+
+Se detectaron ${equiposVencidos.length} equipos vencidos.
+
+Cliente más comprometido:
+${clienteCritico}
+
+Equipos críticos:
+${equiposVencidos
+  .slice(0, 5)
+  .map((e) => `• ${e.tag}`)
+  .join("\n")}
+
+Acción sugerida:
+Programar calibraciones prioritarias
+durante los próximos 7 días.
+`;
+  } else if (proximos > 0) {
+    mensajeIA = `
+No existen equipos vencidos.
+
+Se detectaron ${proximos}
+instrumentos próximos a vencer.
+
+Acción sugerida:
+Planificar intervenciones preventivas.
+`;
+  } else {
+    mensajeIA = `
+No se detectan riesgos operativos.
+
+Todos los instrumentos se encuentran
+dentro de vigencia.
+`;
   }
 
   return (
@@ -221,6 +291,52 @@ export default async function Home() {
               {alDia}
             </h2>
           </div>
+        </div>
+
+        {/* IA */}
+        <div className="bg-white rounded-[32px] shadow-xl p-8 mb-8 border-l-8 border-[#B6E05A]">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-bold text-[#003B49]">
+                  🤖 IA Insights
+                </h2>
+
+                <span
+                  className={
+                    nivelRiesgo === "Alto"
+                      ? "bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold"
+                      : nivelRiesgo === "Medio"
+                        ? "bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold"
+                        : "bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold"
+                  }
+                >
+                  Riesgo {nivelRiesgo}
+                </span>
+              </div>
+
+              <p className="text-slate-500 mt-1">
+                Monitoreo inteligente de activos
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-slate-500">Alertas activas</p>
+
+              <p className="text-4xl font-bold text-[#003B49]">{alertasIA}</p>
+            </div>
+          </div>
+
+          <details className="mt-6">
+            <summary className="cursor-pointer bg-[#003B49] text-white px-5 py-3 rounded-xl inline-block font-semibold">
+              Ver análisis IA
+            </summary>
+
+            <div className="mt-4 bg-slate-50 rounded-2xl p-6">
+              <pre className="whitespace-pre-wrap text-slate-700 font-sans">
+                {mensajeIA}
+              </pre>
+            </div>
+          </details>
         </div>
 
         {/* EQUIPOS */}
