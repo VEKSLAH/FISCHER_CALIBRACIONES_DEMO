@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/src/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export async function crearEquipo(
@@ -39,6 +40,8 @@ export async function crearEquipo(
       fechaUltimaCalibracion,
     },
   });
+
+  revalidatePath("/");
 
   redirect("/");
 }

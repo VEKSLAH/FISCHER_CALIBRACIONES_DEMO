@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/src/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export async function crearCalibracion(formData: FormData) {
@@ -34,6 +35,8 @@ export async function crearCalibracion(formData: FormData) {
       },
     });
   }
+
+  revalidatePath("/");
 
   redirect("/");
 }
